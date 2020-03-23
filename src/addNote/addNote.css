@@ -1,0 +1,16 @@
+.addNote__div {
+    padding: 20px;
+    margin-left: 20px;
+    color: aliceblue;
+}
+
+#content {
+    min-height: 20px;
+    width: 75%;
+}
+
+input {
+    margin-top: 5px;
+    margin-bottom: 20px;
+    padding: 10px;
+}
