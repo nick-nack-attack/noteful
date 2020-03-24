@@ -1,112 +1,180 @@
 import React, { Component } from 'react'
 import NotefulContext from '../NotefulContext'
-import FolderSelector from '../folderSelector/folderSelector'
-import ValidationError from '../validationError'
+import NotefulForm from '../NotefulForm/NotefulForm'
 import config from '../config'
 import './addNote.css'
 
 class AddNote extends Component {
 
-    static contextType = NotefulContext;
-
     constructor(props) {
         super(props);
         this.state = {
-            note: {
-                name: '',
-                id: '',
-                modified: '',
-                folderId: '',
-                content: ''
-            },
+            name: '',
+            modified: '',
+            folderId: '',
+            content: '',
             error: null,
+            nameValid: false,
+            idValid: false,
+            errorMessage: '',
+            folders: [this.props.folders]
         }
     }
 
+    static contextType = NotefulContext;
+
+    static defaultProps = {
+        folders: []
+    };
+
+    validationCheck = name => {
+        name.preventDefault();
+        if (!this.state.name) {
+            this.setState({
+                errorMessage: 'Note name required',
+                nameValid: false
+            });
+        } else if (!this.state.folderId) {
+            this.setState({
+                errorMessage: 'Choose a folder',
+                idValid: false
+            });
+        } else {
+            this.setState({
+                errorMessage: '',
+                nameValid: true,
+                idValid: true
+            },
+            () => {
+                this.handleAddNote();
+            });
+        }
+    }
+
+    handleAddNote = () => {
+        const options = {
+            method: 'POST',
+            headers: {
+                'content-type': 'application/json'
+            },
+            body: JSON.stringify({
+                name: this.state.name,
+                modified: new Date().toISOString(),
+                folderId: this.state.folderId,
+                content: this.state.content
+            })
+        };
+
+        fetch(config.ADD_NOTE, options)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error ('Something went wrong!');
+                }
+                return response;
+            })
+            .then(response => response.json())
+            .then(data => {
+                this.context.addNote(data);
+            })
+            .catch(error => {
+                this.setState({
+                    error: error.message
+                });
+            });
+    }
+
+    handleNameChange = event => {
+        this.setState({
+            name: event
+        });
+    };
+
+    handleContentChange = event => {
+        this.setState({
+            content: event
+        });
+    };
+
+    handleIdChange = event => {
+        this.setState({
+            folderId: event
+        });
+    }
+
+    handleClickCancel = () => {
+        this.props.history.push('/')
+    };
+
+    
     generateNewNoteId = () => {
         // d26e01a6-ffaf-11e8-8eb2-f2801f1b9fd1
         const idFront = Math.random().toString(36).substr(2, 8);
         const idTotal = idFront + '-ffaf-11e8-8eb2-f2801f1b9fd1'
         return idTotal
     }
-
-    // Handle
-
-    handleClickCancel = () => {
-        this.props.history.push('/')
-    }
-
-    handleSubmit = e => {
-        e.preventDefault();
-        
-        const newNoteModified = new Date().toISOString()
-        const newNoteId = this.generateNewNoteId();
-
-        const { nameInput, folderId, content } = e.target
-        const newNote = {
-            id: newNoteId,
-            name: nameInput.value,
-            modified: newNoteModified,
-            folderId: folderId.value,
-            content: content.value,
-        }
-        console.log('ID: ' + newNote.id)
-        console.log('NAME: ' + newNote.name)
-        console.log('MODIFIED: ' + newNote.modified)
-        console.log('FOLDERID: ' + newNote.folderId)
-        console.log('CONTENT: ' + newNote.content)
-    }
-
-    // UPDATE FUNCTIONS
-
-    updateNewNoteName = noteName => {
-        console.log('updateNewNoteName ran with argument: ' + noteName)
-        this.setState({note: {name: noteName}})
-        console.log('state note name is : ' + this.state.note.name)
-    }
-
-    updateNewNoteContent = noteContent => {
-        this.setState({note: {content: noteContent}})
-    }
-
+    
     render() {
+        
+        const folderOptions = this
+                .props
+                .folders
+                .map(
+                (folder, i) => <option value={folder.id} key={i}>{folder.name}</option>
+                )
 
         return (
-            <div
-                className='addNote__div'
-            >
-                <h3>New Note</h3>
-                <form
-                    className='addNote__form'
-                    onSubmit={this.handleSubmit}
+
+            <div className='addNote__div'>
+                <h2>New Note</h2>
+                <NotefulForm
+                onSubmit={event => {
+                    this.validationCheck(event)
+                }}
                 >
-                    <FolderSelector /><br/>
-                    <label
-                        htmlFor='name'
-                    >
-                        Name
-                    </label><br/>
-                    <input
-                        type='text'
-                        className='addNote__nameInput'
-                        name='nameInput'
-                        id='nameInput'
-                        placeholder='ex. New Note'
-                        onSubmit={ e=>this.updateNewNoteName(e.target.value) }
-                    /><br/>
-                    <label
-                        htmlFor='content'
-                    >
-                        Content
-                    </label><br/>
-                    <input
-                        type='text'
-                        className='addNote__contentInput'    
-                        name='content'
-                        id='content'
-                        placeholder='ex. (in a raspy voice) When I was a child...'
-                        onSubmit={ e=>this.updateNewNoteContent(e.target.value) }
-                    />
+                    <div className='addNote__field'>
+                        <label htmlFor='note-name-input'>Name</label>
+                        <input
+                            type='text'
+                            id='add-note-name-input'
+                            name='note'
+                            onChange={event => {
+                                this.handleNameChange(event.target.value);
+                            }}
+                        />
+                    </div>
+                        {!this.state.nameValid && (
+                            <div>
+                                <p>{this.state.errorMessage}</p>
+                            </div>
+                        )}
+                    <div className='addNote__field'>
+                        <label htmlFor='notee-contet-input'>Content</label>
+                        <textarea
+                            id='add-note-content-input'
+                            name='content'
+                            onChange={event => {
+                                this.handleContentChange(event.target.value);
+                            }}
+                        />
+                    </div>
+                    <div className='addNote__field'>
+                        <label htmlFor='note-folder-select'>Folder</label>
+                        <select 
+                            id='add-note-folder-select'
+                            name='folder'
+                            onChange={event => {
+                                this.handleIdChange(event.target.value);
+                            }}
+                        >
+                            <option value={null}>...</option>
+                            { folderOptions }
+                        </select>
+                        {!this.state.nameValid && (
+                            <div>
+                                <p>{this.state.errorMessage}</p>
+                            </div>
+                        )}
+                    </div>
                     <div
                         className='AddNote__buttons'    
                     >
@@ -120,11 +188,17 @@ class AddNote extends Component {
                         <button
                             type='submit'
                             className='addNote__button'    
-                        >
+                            
+                        >   
                             Create
                         </button>
                     </div>
-                </form>
+                </NotefulForm>
+                {this.state.error && (
+                    <div>
+                        <p>{this.state.error}</p>
+                    </div>
+                )}
             </div>
         )
     }

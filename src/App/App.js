@@ -4,7 +4,6 @@ import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import NotePageMain from '../NotePageMain/NotePageMain';
 import NotePageNav from '../NotePageNav/NotePageNav';
 import AddFolder from '../addFolder/addFolder';
-import NotefulForm from '../NotefulForm/NotefulForm'
 import AddNote from '../addNote/addNote';
 import NoteListNav from '../NoteListNav/NoteListNav';
 import NoteListMain from '../NoteListMain/NoteListMain';
@@ -91,7 +90,9 @@ class App extends Component {
                         return <NotePageNav {...routeProps} folder={folder} />;
                     }}
                 />
-                <Route path="/add-folder" component={AddFolder} />
+                < Route 
+                    path="/add-folder" 
+                    render={ (props) => <AddFolder folders={this.state.folders}/>}/>
                </> 
         );
     }
@@ -128,7 +129,10 @@ class App extends Component {
                         return <NotePageMain {...routeProps} note={note} />;
                     }}
                 />
-                <Route path="/add-note" component={AddNote} />
+                <Route 
+                    path="/add-note" 
+                render={ (props) => <AddNote folders={this.state.folders} /> } />
+                    
             </>
         );
     }

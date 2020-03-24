@@ -1,15 +1,21 @@
-import React from './node_modules/react';
-import ReactDOM from './node_modules/react-dom';
-import { BrowserRouter } from './node_modules/react-router-dom';
-import App from './App';
+import React from 'react'
+import ReactDOM from 'react-dom'
+import { BrowserRouter } from 'react-router-dom'
+import { library } from '@fortawesome/fontawesome-svg-core'
+import {
+  faPlus, faChevronLeft, faTrashAlt, faCheckDouble
+} from '@fortawesome/free-solid-svg-icons'
+import App from './App'
+
+library.add(faPlus, faChevronLeft, faTrashAlt, faCheckDouble)
 
 it('renders without crashing', () => {
-  const div = document.createElement('div');
+  const div = document.createElement('div')
   ReactDOM.render(
-  <BrowserRouter>
-    <App />
-  </BrowserRouter>, 
-  div
-);
-  ReactDOM.unmountComponentAtNode(div);
-});
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>,
+    div
+  )
+  ReactDOM.unmountComponentAtNode(div)
+})

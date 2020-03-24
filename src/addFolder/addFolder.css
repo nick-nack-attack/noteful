@@ -1,0 +1,11 @@
+.addFolder__div {
+    color: #dedede;
+  }
+  
+  .addFolder__div h2 {
+    margin-left: 16px;
+  }
+
+  input {
+    width: 50%;
+  }

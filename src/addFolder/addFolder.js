@@ -1,27 +1,47 @@
 import React, { Component } from 'react';
 import NotefulContext from '../NotefulContext'
-import ValidationError from '../validationError'
 import config from '../config'
 import './addFolder.css'
+import NotefulForm from '../NotefulForm/NotefulForm';
 
-// This variable is to make something required
-const Required = () => {
-    return <span className='AddBookmark__required'>*</span>
-}
-
-class AddFolder extends Component {
+export default class AddFolder extends Component {
 
     static contextType = NotefulContext;
     
-    constructor(props) {
-        super(props);
-        this.state = {
-            folderName: {
-                value: '',
-                touched: false,
-            },
-            error: null,
+        state = {
+            folderName: '',
+            nameValid: false,
+            validation: '',
+            success:false,
+            successMessage: '',
+            folders: [this.props.folders]
+        };
+
+    validationCheck = name => {
+        const validationMessage = this.state.validation;
+        let hasError = false;
+
+        const checkFolderNames = this.context.folders.filter(folderName => name === folderName.name);
+
+        if (name.length === 0) {
+            hasError = true;
+            validationMessage = 'Please enter a folder name.'
         }
+
+        if (checkFolderNames.length !== 0) {
+            hasError =true;
+            validationMessage = 'Error! This folder name already exists.'
+        }
+
+        else {
+            validationMessage = '';
+        }
+
+        this.setState({
+            nameValid: !hasError,
+            validation: validationMessage,
+            folderName: name
+        })
     }
 
     generateNewFolderId = () => {
@@ -31,99 +51,76 @@ class AddFolder extends Component {
         return idTotal
     }
 
-    handleSubmit = (e) => {
-        // Prevent default form functionality
-        e.preventDefault();
-        const folderName = this.state.folderName.value;
+    handleAddFolder = event => {
+        event.preventDefault();
         const newId = this.generateNewFolderId();
-        const newFolder = {
-            id: newId,
-            name: folderName
-        }
-        // Set error to null
-        this.setState({error:null})
-        // Send this new data to server
-        
-        
-        fetch(config.ADD_FOLDER, {
+        const options = {
             method: 'POST',
-            body: JSON.stringify(newFolder),
             headers: {
                 'content-type': 'application/json'
+            },
+            body: JSON.stringify({
+                id: newId,
+                name: this.state.folderName
+            })
+        };
+        fetch(config.ADD_FOLDER, options)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error ('Something went wrong!');
             }
+            return response;
         })
-        .then(res => {
-            if (!res.ok) {
-                return res.json().then(error=> {
-                    throw error
-                })
-            }
-            return res.json()
-        })
+        .then(response => response.json())
         .then(data => {
+            this.context.handleAddFolder(data);
             this.props.history.push('/')
-            this.context.addFolder(data)
         })
         .catch(error => {
-            this.setState({error})
-        })
-    
-    }
+            this.setState({
+                error: error.message
+            });
+        });
+    };
     
     handleClickCancel = () => {
         this.props.history.push('/')
     };
         
-
-    updateNewFolderName = (folderName) => {
-        this.setState({folderName: {value: folderName, touched: true}})
-        console.log(folderName)
-    }
-
-    validateFolderName = () => {
-        const folderName = this.state.folderName.value.trim();
-        if (folderName.length === 0) {
-            return "Name is required"
-        } else if (folderName.length > 10) {
-            return "Must be less than 10 characters"
-        } 
+    updateNewFolderName = event => {
+        this.setState({name: event});
+        console.log(event)
     }
     
     render() {
 
-        const folderNameError = this.validateFolderName();
-        const { error } = this.state
-
         return (
 
             <div className='addFolder__div'>
-            <h3>New Folder</h3>
-            <form 
-                className='addFolder__form'
-                onSubmit={this.handleSubmit}
+            <h2>New Folder</h2>
+            <NotefulForm
+                onSubmit={event => {
+                    this.handleAddFolder(event);
+                }}
             >
-                <div>
-                    Between 1-10 characters
-                </div>
-                <div 
-                    className='AddFolder__error' 
-                    role='alert'
-                >
-                    {error && <p>{error.message}</p>}
-                </div>
-                <div>
-                <label htmlFor='name'>New Folder Name {' '} <Required/></label>
+                <div className='addFolder__field'>
+                    <label htmlFor='add-folder-name'>Name</label>
                     <input
                         type='text'
-                        className='newFolder__input'
-                        name='name'
-                        id='name'
-                        placeholder ='ex. Recipes'
-                        required
-                        onChange={e=>this.updateNewFolderName(e.target.value)}
+                        id='add-folder-name-input'
+                        name='folder'
+                        placeholder = 'ex. New Folder'
+                        onChange={event => {
+                            this.updateNewFolderName(event.target.value);
+                        }}
                     />
-                    {this.state.folderName.touched && <ValidationError message={folderNameError}/>}
-                    <div className='AddFolder__buttons'>
+                </div>
+                        {!this.state.nameValid && (
+                            <div>
+                                <p>{this.state.errorMessage}</p>
+                            </div>
+                        )}
+                <div className='AddFolder__buttons'>
                         <button 
                             type='button' 
                             onClick={this.handleClickCancel} 
@@ -134,16 +131,19 @@ class AddFolder extends Component {
                         <button
                             type='submit'
                             className='addNewFolder__button'
-                            disabled={this.validateFolderName()}
+                            disabled={!this.state.nameValid}
                         >
                             Create
                         </button>
-                    </div>
                 </div>
-            </form>
+            </NotefulForm>
+            <section className="error-box" id="error-box">
+                {this.state.validation}
+            </section>
+            <section className="error-box" id="error-box">
+                {this.state.successMessage}
+            </section>
             </div>
         )
     }
 }
-
-export default AddFolder
