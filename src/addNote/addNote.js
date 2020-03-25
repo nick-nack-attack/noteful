@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import NotefulContext from '../NotefulContext'
 import NotefulForm from '../NotefulForm/NotefulForm'
+import ErrMsg from '../errorMessage';
 import config from '../config'
 import './addNote.css'
 
@@ -15,7 +16,7 @@ export default class AddNote extends Component {
         titleValid: false,
         contentValid: false,
         folderSelectValid: false,
-        validationMessage: null
+        errMsg: ''
         }
 
     static contextType = NotefulContext;
@@ -160,6 +161,7 @@ export default class AddNote extends Component {
                             placeholder="ex. New Note"
                             onChange={e => this.updateFormEntry(e)}/>
                     </div>
+                    <ErrMsg msg={''} />
                     <div className='addNote__field'>
                         <label htmlFor='content'>Content</label>
                         <textarea

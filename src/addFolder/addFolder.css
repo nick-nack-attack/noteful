@@ -9,3 +9,16 @@
   input {
     width: 50%;
   }
+
+  .errorValidation {
+    background-color: red;
+    color: white;
+    text-align: center;
+    font-weight: bold;
+  }
+
+  .buttons {
+    display: flex;
+
+  }
+

@@ -14,6 +14,7 @@ export default class AddFolder extends Component {
         formValid: false,
         titleValid: false,
         validationMessage: "",
+        error: '',
         };
     }
 
@@ -31,41 +32,32 @@ export default class AddFolder extends Component {
         }, () => {this.validateEntry(name, value)});
     }
 
-    validateEntry(name, value) {
-        let inputErrors;
-        let hasErrors = this.state.hasErrors;
+    validateEntry() {
 
-        value = value.trim();
-        if (value < 1) {
-            inputErrors = `${name} is required.`;
-        } 
-        
-        else {
-            inputErrors = '';
-            hasErrors = false;
-        }
-        this.setState({
-            validationMessage: inputErrors,
-            [`${name}Valid`]: !hasErrors,
-            hasErrors: !hasErrors
-        }, this.formValid );
+        const title = this.state.title;
+
+        if ( title.length === 0) {
+            this.setState({
+                error: 'Error! Name is required'
+            })
+            } else {
+                this.setState({
+                    formValid: true
+                })
+            }
     }
 
-    formValid() {
-        const { titleValid } = this.state;
-        if (titleValid === true){
-            this.setState({
-                formValid: true
-            });
-        }
-        else {this.setState({
-            formValid: !this.formValid
-            }
-        )}
-      }
 
     handleSubmit(e) {
         e.preventDefault();
+        this.validateEntry();
+        console.log('handleSubmit ran!')
+        if ( this.state.title.length === 0) {
+        this.setState({
+            error: 'Error! Name is required'
+        })
+        } else {
+
         const { title } = this.state;
         const folder = {
             name: title
@@ -98,6 +90,7 @@ export default class AddFolder extends Component {
             this.setState({ error })
         })
     }
+    }
 
     render() {
         
@@ -116,6 +109,9 @@ export default class AddFolder extends Component {
                     placeholder="Folder Title"
                     onChange={e => this.updateFormEntry(e)}/>
                 </div>
+                <div className='errorValidation'>
+                    <p>{ this.state.error }</p>
+                </div>
                 <div className="buttons">
                  <button 
                     type="button" 
@@ -126,8 +122,8 @@ export default class AddFolder extends Component {
                  <button 
                     type="submit" 
                     className="button"
-                    disabled={this.state.formValid === false}>
-                     Save
+                >
+                    Save
                  </button>
                  {}
                 </div>
