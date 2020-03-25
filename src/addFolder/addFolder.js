@@ -1,149 +1,140 @@
 import React, { Component } from 'react';
 import NotefulContext from '../NotefulContext'
 import config from '../config'
+import PropTypes from 'prop-types';
 import './addFolder.css'
 import NotefulForm from '../NotefulForm/NotefulForm';
 
 export default class AddFolder extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+        hasErrors: false,
+        title: "",
+        formValid: false,
+        titleValid: false,
+        validationMessage: "",
+        };
+    }
 
     static contextType = NotefulContext;
     
-        state = {
-            folderName: '',
-            nameValid: false,
-            validation: '',
-            success:false,
-            successMessage: '',
-            folders: [this.props.folders]
-        };
+    goBack = () => {
+        this.props.history.goBack();
+    }
 
-    validationCheck = name => {
-        const validationMessage = this.state.validation;
-        let hasError = false;
-
-        const checkFolderNames = this.context.folders.filter(folderName => name === folderName.name);
-
-        if (name.length === 0) {
-            hasError = true;
-            validationMessage = 'Please enter a folder name.'
-        }
-
-        if (checkFolderNames.length !== 0) {
-            hasError =true;
-            validationMessage = 'Error! This folder name already exists.'
-        }
-
-        else {
-            validationMessage = '';
-        }
-
+    updateFormEntry(e) {           
+        const name = e.target.name;
+        const value = e.target.value;
         this.setState({
-            nameValid: !hasError,
-            validation: validationMessage,
-            folderName: name
-        })
+            [e.target.name]: e.target.value
+        }, () => {this.validateEntry(name, value)});
     }
 
-    generateNewFolderId = () => {
-        // b0715efe-ffaf-11e8-8eb2-f2801f1b9fd1
-        const id = Math.random().toString(36).substr(2, 8)
-        const idTotal = id + '-ffaf-11e8-8eb2-f2801f1b9fd1'
-        return idTotal
+    validateEntry(name, value) {
+        let inputErrors;
+        let hasErrors = this.state.hasErrors;
+
+        value = value.trim();
+        if (value < 1) {
+            inputErrors = `${name} is required.`;
+        } 
+        
+        else {
+            inputErrors = '';
+            hasErrors = false;
+        }
+        this.setState({
+            validationMessage: inputErrors,
+            [`${name}Valid`]: !hasErrors,
+            hasErrors: !hasErrors
+        }, this.formValid );
     }
 
-    handleAddFolder = event => {
-        event.preventDefault();
-        const newId = this.generateNewFolderId();
-        const options = {
+    formValid() {
+        const { titleValid } = this.state;
+        if (titleValid === true){
+            this.setState({
+                formValid: true
+            });
+        }
+        else {this.setState({
+            formValid: !this.formValid
+            }
+        )}
+      }
+
+    handleSubmit(e) {
+        e.preventDefault();
+        const { title } = this.state;
+        const folder = {
+            name: title
+        }
+
+        this.setState({error: null})
+        fetch(`${config.API_ENDPOINT}/folders`, {
             method: 'POST',
+            body: JSON.stringify(folder),
             headers: {
                 'content-type': 'application/json'
-            },
-            body: JSON.stringify({
-                id: newId,
-                name: this.state.folderName
-            })
-        };
-        fetch(config.ADD_FOLDER, options)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error ('Something went wrong!');
             }
-            return response;
         })
-        .then(response => response.json())
+        .then(res => {
+            if (!res.ok) {
+                return res.json().then(error => {
+                    console.log(`Error is: ${error}`)
+                    throw error
+                })
+            }
+            return res.json()
+        })
         .then(data => {
-            this.context.handleAddFolder(data);
-            this.props.history.push('/')
+            this.goBack()
+            this.context.addFolder(data)
         })
         .catch(error => {
-            this.setState({
-                error: error.message
-            });
-        });
-    };
-    
-    handleClickCancel = () => {
-        this.props.history.push('/')
-    };
-        
-    updateNewFolderName = event => {
-        this.setState({name: event});
-        console.log(event)
+            this.setState({ error })
+        })
     }
-    
+
     render() {
-
+        
         return (
-
-            <div className='addFolder__div'>
-            <h2>New Folder</h2>
-            <NotefulForm
-                onSubmit={event => {
-                    this.handleAddFolder(event);
-                }}
-            >
-                <div className='addFolder__field'>
-                    <label htmlFor='add-folder-name'>Name</label>
-                    <input
-                        type='text'
-                        id='add-folder-name-input'
-                        name='folder'
-                        placeholder = 'ex. New Folder'
-                        onChange={event => {
-                            this.updateNewFolderName(event.target.value);
-                        }}
-                    />
+            <form 
+                className="Noteful-form"
+                onSubmit={e => this.handleSubmit(e)}>
+                <h2 className="title">Add Folder</h2>
+                <div className="form-group">
+                  <label htmlFor="title">Title</label>
+                  <input 
+                    type="text" 
+                    className="field"
+                    name="title" 
+                    id="title" 
+                    placeholder="Folder Title"
+                    onChange={e => this.updateFormEntry(e)}/>
                 </div>
-                        {!this.state.nameValid && (
-                            <div>
-                                <p>{this.state.errorMessage}</p>
-                            </div>
-                        )}
-                <div className='AddFolder__buttons'>
-                        <button 
-                            type='button' 
-                            onClick={this.handleClickCancel} 
-                        >
-                            Cancel
-                        </button>
-                        {' '}
-                        <button
-                            type='submit'
-                            className='addNewFolder__button'
-                            disabled={!this.state.nameValid}
-                        >
-                            Create
-                        </button>
+                <div className="buttons">
+                 <button 
+                    type="button" 
+                    className="button"
+                    onClick={() => this.goBack()}>
+                     Cancel
+                 </button>
+                 <button 
+                    type="submit" 
+                    className="button"
+                    disabled={this.state.formValid === false}>
+                     Save
+                 </button>
+                 {}
                 </div>
-            </NotefulForm>
-            <section className="error-box" id="error-box">
-                {this.state.validation}
-            </section>
-            <section className="error-box" id="error-box">
-                {this.state.successMessage}
-            </section>
-            </div>
+            </form> 
         )
     }
 }
+
+
+AddFolder.propType = {
+    push: PropTypes.func.isRequired
+};

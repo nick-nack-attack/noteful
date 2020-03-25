@@ -4,123 +4,140 @@ import NotefulForm from '../NotefulForm/NotefulForm'
 import config from '../config'
 import './addNote.css'
 
-class AddNote extends Component {
+export default class AddNote extends Component {
 
-    constructor(props) {
-        super(props);
-        this.state = {
-            name: '',
-            modified: '',
-            folderId: '',
-            content: '',
-            error: null,
-            nameValid: false,
-            idValid: false,
-            errorMessage: '',
-            folders: [this.props.folders]
+    state = {
+        title: "",
+        content: "",
+        folderSelect: "",
+        folderId: "",
+        formValid: false,
+        titleValid: false,
+        contentValid: false,
+        folderSelectValid: false,
+        validationMessage: null
         }
-    }
 
     static contextType = NotefulContext;
 
-    static defaultProps = {
-        folders: []
-    };
-
-    validationCheck = name => {
-        name.preventDefault();
-        if (!this.state.name) {
-            this.setState({
-                errorMessage: 'Note name required',
-                nameValid: false
-            });
-        } else if (!this.state.folderId) {
-            this.setState({
-                errorMessage: 'Choose a folder',
-                idValid: false
-            });
-        } else {
-            this.setState({
-                errorMessage: '',
-                nameValid: true,
-                idValid: true
-            },
-            () => {
-                this.handleAddNote();
-            });
-        }
+    goBack = () => {
+        this.props.history.goBack();
     }
 
-    handleAddNote = () => {
-        const options = {
-            method: 'POST',
-            headers: {
-                'content-type': 'application/json'
-            },
-            body: JSON.stringify({
-                name: this.state.name,
-                modified: new Date().toISOString(),
-                folderId: this.state.folderId,
-                content: this.state.content
-            })
-        };
-
-        fetch(config.ADD_NOTE, options)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error ('Something went wrong!');
-                }
-                return response;
-            })
-            .then(response => response.json())
-            .then(data => {
-                this.context.addNote(data);
-            })
-            .catch(error => {
-                this.setState({
-                    error: error.message
-                });
-            });
-    }
-
-    handleNameChange = event => {
-        this.setState({
-            name: event
-        });
-    };
-
-    handleContentChange = event => {
-        this.setState({
-            content: event
-        });
-    };
-
-    handleIdChange = event => {
-        this.setState({
-            folderId: event
-        });
-    }
-
-    handleClickCancel = () => {
-        this.props.history.push('/')
-    };
-
-    
     generateNewNoteId = () => {
         // d26e01a6-ffaf-11e8-8eb2-f2801f1b9fd1
         const idFront = Math.random().toString(36).substr(2, 8);
         const idTotal = idFront + '-ffaf-11e8-8eb2-f2801f1b9fd1'
         return idTotal
     }
-    
+
+    updateFormEntry(event) {
+        const name = event.target.name;
+        const value = event.target.value;
+        let id = event.target.value;
+        if(event.target.selectedOptions) {
+            id = event.target.selectedOptions[0].id;
+            this.setState({
+                'folderId': id
+            })
+        }
+        this.setState({
+            [event.target.name]: event.target.value,
+        }, () => {this.validateEntry(name,value)});
+    }
+
+    validateEntry(name, value) {
+        let hasErrors = false;
+
+        value= value.trim();
+
+        if ((name === 'title') || (name === 'content')) {
+            if (value.length < 1) {
+                hasErrors = true
+            }
+            else {
+                hasErrors = false
+            }
+        }
+
+        else if ( (name === 'folderSelect') && (value === 'Select') ) {
+            hasErrors = true
+        }
+
+        else {
+            hasErrors = false
+        }
+
+        this.setState({
+            [`${name}Valid`] : !hasErrors 
+            }, this.formValid
+            );
+    }
+
+    formValid() {
+        const { titleValid, contentValid, folderSelectValid } = this.state;
+        if (titleValid && contentValid && folderSelectValid === true) {
+            this.setState({
+                    formValid: true,
+                    validationMessage: null
+            });
+        }
+        else {this.setState({
+            formValid: !this.formValid,
+            validationMessage: 'All fields are required!'
+        })}
+    }
+
+    handleSubmit(event) {
+        event.preventDefault();
+
+        const { title, content, folderId } = this.state;
+
+        const note = {
+            name: title,
+            content: content,
+            folderId: folderId,
+            modified: new Date().toISOString(),
+        }
+
+        this.setState({
+            error: null
+        })
+
+        fetch(config.ADD_NOTE, {
+            method: 'POST',
+            body: JSON.stringify(note),
+            headers: {
+                'content-type': 'application/json'
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error ('Something went wrong!');
+                }
+                return response.json();
+            })
+            .then(data => {
+                this.goBack()
+                this.context.addNote(data);
+            })
+            .catch(error => {
+                this.setState({ error });
+            });
+    }
+
     render() {
-        
-        const folderOptions = this
-                .props
-                .folders
-                .map(
-                (folder, i) => <option value={folder.id} key={i}>{folder.name}</option>
+
+        const folders = this.context.folders;
+        const folderOptions = folders.map( folder => {
+            return (
+                <option
+                    key={folder.id}
+                    id={folder.id}>
+                {folder.name}
+                </option>
                 )
+        })
 
         return (
 
@@ -128,52 +145,41 @@ class AddNote extends Component {
                 <h2>New Note</h2>
                 <NotefulForm
                 onSubmit={event => {
-                    this.validationCheck(event)
+                    this.handleSubmit(event)
                 }}
                 >
                     <div className='addNote__field'>
-                        <label htmlFor='note-name-input'>Name</label>
+                        <label htmlFor='note-name-input'>Title</label>
                         <input
                             type='text'
-                            id='add-note-name-input'
-                            name='note'
-                            onChange={event => {
-                                this.handleNameChange(event.target.value);
-                            }}
-                        />
+                            className='field'
+                            name='title'
+                            id='title'
+                            aria-label='Title'
+                            aria-required='true'
+                            placeholder="ex. New Note"
+                            onChange={e => this.updateFormEntry(e)}/>
                     </div>
-                        {!this.state.nameValid && (
-                            <div>
-                                <p>{this.state.errorMessage}</p>
-                            </div>
-                        )}
                     <div className='addNote__field'>
-                        <label htmlFor='notee-contet-input'>Content</label>
+                        <label htmlFor='content'>Content</label>
                         <textarea
-                            id='add-note-content-input'
+                            className='field'
                             name='content'
-                            onChange={event => {
-                                this.handleContentChange(event.target.value);
-                            }}
-                        />
+                            id='content'
+                            onChange={e => this.updateFormEntry(e)}/>
                     </div>
                     <div className='addNote__field'>
-                        <label htmlFor='note-folder-select'>Folder</label>
+                        <label htmlFor='folder-select'>Folder</label>
                         <select 
-                            id='add-note-folder-select'
-                            name='folder'
-                            onChange={event => {
-                                this.handleIdChange(event.target.value);
-                            }}
-                        >
-                            <option value={null}>...</option>
+                            type="text"
+                            className="field"
+                            name="folderSelect"
+                            id="folder-select"
+                            ref={this.folderSelect}
+                            onChange={event => this.updateFormEntry(event)}>
+                                <option>Select</option>
                             { folderOptions }
                         </select>
-                        {!this.state.nameValid && (
-                            <div>
-                                <p>{this.state.errorMessage}</p>
-                            </div>
-                        )}
                     </div>
                     <div
                         className='AddNote__buttons'    
@@ -181,27 +187,18 @@ class AddNote extends Component {
                         <button
                             type='button'
                             className='addNote__button'
-                            onClick={this.handleClickCancel}    
-                        >
-                            Cancel
+                            onClick={ () => this.goBack() } >
+                                Cancel
                         </button>
                         <button
                             type='submit'
                             className='addNote__button'    
-                            
-                        >   
-                            Create
+                            disabled={ !this.state.formValid } >   
+                                Create
                         </button>
                     </div>
                 </NotefulForm>
-                {this.state.error && (
-                    <div>
-                        <p>{this.state.error}</p>
-                    </div>
-                )}
             </div>
         )
     }
 }
-
-export default AddNote;

@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import { Link } from 'react-router-dom'
 import { format } from 'date-fns'
+import PropTypes from 'prop-types'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import NotefulContext from '../NotefulContext'
 import config from '../config'
@@ -18,9 +19,7 @@ export default class Note extends Component {
   static contextType = NotefulContext;
 
   // Now handle the click delete. It has one argument, event.
-  handleClickDelete = event => {
-    // Prevent the default form from doing its thang
-    event.preventDefault()
+  handleClickDelete = () => {
     // this variable is set to whatever the passed in noteId is
     const noteId = this.props.id
     // Now update the database
@@ -37,11 +36,11 @@ export default class Note extends Component {
     // Then, handle the response.
     .then( res => {
       // If the response okay is false ...
-      if(!res.ok)
+      if (!res.ok) {
         // ... return the reponse, convert it to json, then have Promise handle the rejection by passing the error in.
         return res.json().then(e=>Promise.reject(e))
       // Otherwise, if the response is okay, return the response and convert it to json.
-      return res.json()
+      }
     })
     // run an anonymous function
     .then( () => {
@@ -89,6 +88,13 @@ export default class Note extends Component {
     )
   }
 }
+
+Note.propType = {
+  onDeleteNote: PropTypes.func.isRequired,
+  name: PropTypes.string.isRequired,
+  id: PropTypes.string.isRequired,
+  modified: PropTypes.string
+};
 
 // new Date("2019-01-03T00:00:00.000Z")
 // 
