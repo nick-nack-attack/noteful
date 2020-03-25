@@ -45,8 +45,6 @@ class App extends Component {
     };
 
     componentDidMount() {
-        // fake date loading from API call
-        // setTimeout(() => this.setState(STORE), 600);
         Promise.all([
             fetch(`${config.ADD_NOTE}`),
             fetch(`${config.ADD_FOLDER}`)
@@ -118,8 +116,8 @@ class App extends Component {
             folders: this.state.folders,
             toggle: this.state.toggle,
             toggleErrors: this.handleErrorToggle,
-            addNote: this.addNote,
-            addFolder: this.addFolder,
+            addNote: this.handleAddNote,
+            addFolder: this.handleAddFolder,
             deleteNote: this.handleDeleteNote,
             deleteFolder: this.handleDeleteFolder,
             back: this.handleBackButton

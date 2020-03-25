@@ -20,7 +20,7 @@ export default class AddFolder extends Component {
     static contextType = NotefulContext;
     
     goBack = () => {
-        this.props.history.goBack();
+        this.props.history.push('/');
     }
 
     updateFormEntry(e) {           
@@ -89,8 +89,10 @@ export default class AddFolder extends Component {
             return res.json()
         })
         .then(data => {
-            this.goBack()
+            console.log(this.props)
+            console.log(this.context)
             this.context.addFolder(data)
+            this.goBack()
         })
         .catch(error => {
             this.setState({ error })

@@ -25,7 +25,7 @@ export default class NoteListNav extends Component {
               to={`/folder/${folder.id}`}
             >
               <span className='NoteListNav__num-notes'>
-                {countNotesForFolder(folder.notes, folder.id)}
+                {countNotesForFolder(this.context.notes, folder.id)}
               </span>
               {folder.name}
             </NavLink>
