@@ -80,7 +80,7 @@ export default class Note extends Component {
             Modified
             {' '}
             <span className='Date'>
-            { format(new Date(this.props.modified), 'MMM dd, yyyy') }
+            { (this.props.modified) && format(new Date(this.props.modified), 'MMM dd, yyyy') }
             </span>
           </div>
         </div>

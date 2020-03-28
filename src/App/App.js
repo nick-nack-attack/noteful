@@ -89,7 +89,6 @@ class App extends Component {
                     <Route exact key={path} path={path} component={NoteListNav} /> ))}
                     <Route path="/note/:noteId" component={NotePageNav} />     
                     <Route path="/add-folder" component={NotePageNav} />
-                    <Route path="/note/:noteId" component={NotePageNav} />
             </> 
         );
     }
