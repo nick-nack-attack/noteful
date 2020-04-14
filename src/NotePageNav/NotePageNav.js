@@ -24,7 +24,7 @@ export default class NotePageNav extends Component {
     const { notes, folders } = this.context
     const { noteId } = this.props.match.params
     const note = findNote( notes, noteId ) || {}
-    const folder = findFolder( folders, note.folderId )
+    const folder = findFolder( folders, note.folderid )
 
     return (
       <div className='NotePageNav'>
@@ -36,7 +36,7 @@ export default class NotePageNav extends Component {
         >
           <FontAwesomeIcon icon='chevron-left' />
           <br />
-          Back
+          Back!
         </CircleButton>
         {folder && (
           <h3 className='NotePageNav__folder-name'>

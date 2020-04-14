@@ -11,7 +11,7 @@ export default class AddNote extends Component {
         title: "",
         content: "",
         folderSelect: "",
-        folderId: "",
+        folderid: "",
         formValid: false,
         titleValid: false,
         contentValid: false,
@@ -39,7 +39,7 @@ export default class AddNote extends Component {
         if(event.target.selectedOptions) {
             id = event.target.selectedOptions[0].id;
             this.setState({
-                'folderId': id
+                'folderid': id
             })
         }
         this.setState({
@@ -92,20 +92,20 @@ export default class AddNote extends Component {
     handleSubmit(event) {
         event.preventDefault();
 
-        const { title, content, folderId } = this.state;
+        const { title, content, folderid } = this.state;
 
         const note = {
-            name: title,
-            content: content,
-            folderId: folderId,
+            note_name: title,
             modified: new Date().toISOString(),
+            folderid: folderid,
+            content: content
         }
 
         this.setState({
             error: null
         })
 
-        fetch(config.ADD_NOTE, {
+        fetch(config.API_NOTES, {
             method: 'POST',
             body: JSON.stringify(note),
             headers: {
@@ -135,7 +135,7 @@ export default class AddNote extends Component {
                 <option
                     key={folder.id}
                     id={folder.id}>
-                {folder.name}
+                    {folder.folder_name}
                 </option>
                 )
         })

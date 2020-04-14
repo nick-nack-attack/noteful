@@ -25,7 +25,7 @@ export default class Note extends Component {
     // Now update the database
     // Fetch using the config file to get the url to the database and the location will be adding /notes/ and the note's id
     // The second argument includes the method and header(s)
-    fetch(`${config.API_ENDPOINT}/notes/${noteId}`, {
+    fetch( config.API_NOTES + '/' + noteId , {
       // The method is deleting (a note)
       method: 'DELETE',
       // This header says what type of content it is — which it's application/json type.
@@ -91,7 +91,7 @@ export default class Note extends Component {
 
 Note.propType = {
   onDeleteNote: PropTypes.func.isRequired,
-  name: PropTypes.string.isRequired,
+  note_name: PropTypes.string.isRequired,
   id: PropTypes.string.isRequired,
   modified: PropTypes.string
 };

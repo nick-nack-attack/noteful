@@ -22,7 +22,8 @@ export default class NoteListMain extends Component {
 
     const { folderId } = this.props.match.params
     const { notes=[] } = this.context
-    const notesForFolder = getNotesForFolder(notes, folderId)
+    const notesForFolder = getNotesForFolder(notes, 2)
+    console.log('This is the folderId: ' + folderId)
 
     return (
 
@@ -32,9 +33,9 @@ export default class NoteListMain extends Component {
             <li key={note.id}>
               <Note 
                 id={note.id}
-                name={note.name}
+                name={note.note_name}
                 modified={note.modified}
-              />
+              /> 
             </li>
           )}
         </ul>

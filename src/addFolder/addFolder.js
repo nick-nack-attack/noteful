@@ -3,7 +3,6 @@ import NotefulContext from '../NotefulContext'
 import config from '../config'
 import PropTypes from 'prop-types';
 import './addFolder.css'
-import NotefulForm from '../NotefulForm/NotefulForm';
 
 export default class AddFolder extends Component {
     constructor(props) {
@@ -60,11 +59,11 @@ export default class AddFolder extends Component {
 
         const { title } = this.state;
         const folder = {
-            name: title
+            folder_name: title
         }
 
         this.setState({error: null})
-        fetch(`${config.API_ENDPOINT}/folders`, {
+        fetch( config.API_FOLDERS , {
             method: 'POST',
             body: JSON.stringify(folder),
             headers: {
