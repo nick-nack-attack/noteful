@@ -6,6 +6,7 @@ import NotePageMain from '../NotePageMain/NotePageMain';
 import NotePageNav from '../NotePageNav/NotePageNav';
 import AddFolder from '../addFolder/addFolder';
 import AddNote from '../addNote/addNote';
+import EditNote from '../editNote/editNote';
 import NoteListNav from '../NoteListNav/NoteListNav';
 import NoteListMain from '../NoteListMain/NoteListMain';
 import ErrorBoundary from '../errorHandlers/errorBoundary';
@@ -43,6 +44,12 @@ class App extends Component {
             notes: [...this.state.notes, note]
         });
     };
+
+    handleEditNote = note => {
+        this.setState({
+            notes: [...this.state.notes, note]
+        })
+    }
 
     componentDidMount() {
         Promise.all([
@@ -104,6 +111,7 @@ class App extends Component {
                 </ErrorBoundary>
                     <Route path="/add-folder" component={AddFolder} />
                     <Route path="/add-note" component={AddNote} />
+                    <Route path="/edit-note" component={EditNote} />
             </>
         );
     }
@@ -116,6 +124,7 @@ class App extends Component {
             toggle: this.state.toggle,
             toggleErrors: this.handleErrorToggle,
             addNote: this.handleAddNote,
+            editNote: this.handleEditNote,
             addFolder: this.handleAddFolder,
             deleteNote: this.handleDeleteNote,
             deleteFolder: this.handleDeleteFolder,

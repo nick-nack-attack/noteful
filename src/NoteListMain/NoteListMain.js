@@ -22,7 +22,7 @@ export default class NoteListMain extends Component {
 
     const { folderId } = this.props.match.params
     const { notes=[] } = this.context
-    const notesForFolder = getNotesForFolder(notes, 2)
+    const notesForFolder = getNotesForFolder(notes, folderId)
     console.log('This is the folderId: ' + folderId)
 
     return (

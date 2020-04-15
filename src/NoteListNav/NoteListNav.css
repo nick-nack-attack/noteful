@@ -1,6 +1,6 @@
 .NoteListNav__list {
   list-style-type: none;
-  margin: 130px 0 0;
+  margin: 150px 0 0;
   padding: 0;
 }
 
@@ -25,6 +25,7 @@
   font-size: 20px;
   margin: 0 0 8px auto;
   max-width: 180px;
+  min-height: 100px;
   padding: 8px 16px;
   text-decoration: none;
 }
@@ -38,7 +39,24 @@
 
 .NoteListNav__num-notes {
   color: #adadad;
-  display: block;
+  margin-right: -15px;
   float: right;
   font-size: 10px;
+}
+
+.folder__delete {
+  border: none;
+  background-color: transparent;
+  color: #adadad;
+}
+.folder__delete:hover {
+  background-color: tomato;
+  color: white;
+  cursor: pointer;
+}
+
+.folder__delete__div {
+  float: right;
+  margin-top: 75px;
+  margin-right: 5px;
 }

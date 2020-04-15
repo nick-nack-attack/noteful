@@ -18,51 +18,40 @@ export default class Note extends Component {
   // Add a static contextType which is noteful context file
   static contextType = NotefulContext;
 
+  handleClickEdit = () => {
+
+  }
+
   // Now handle the click delete. It has one argument, event.
   handleClickDelete = () => {
-    // this variable is set to whatever the passed in noteId is
-    const noteId = this.props.id
-    // Now update the database
-    // Fetch using the config file to get the url to the database and the location will be adding /notes/ and the note's id
-    // The second argument includes the method and header(s)
+    const noteId = this.props.id    
     fetch( config.API_NOTES + '/' + noteId , {
-      // The method is deleting (a note)
       method: 'DELETE',
-      // This header says what type of content it is — which it's application/json type.
       headers: {
         'content-type': 'application/json'
       },
     })
-    // Then, handle the response.
     .then( res => {
-      // If the response okay is false ...
       if (!res.ok) {
-        // ... return the reponse, convert it to json, then have Promise handle the rejection by passing the error in.
         return res.json().then(e=>Promise.reject(e))
-      // Otherwise, if the response is okay, return the response and convert it to json.
       }
     })
-    // run an anonymous function
     .then( () => {
-      // run the function in the context, pass in the noteId
       this.context.deleteNote(noteId)
-      // Allow parent to perform another behavior.
       this.props.onDeleteNote(noteId)
     })
-    // console log if anything here goes wrong
     .catch(error=>console.log(error))
   }
 
   render() {
 
-    // these are the values being passed in as props
     const { id, name, modified } = this.props
 
     return (
 
       <div className='Note'>
         <h2 className='Note__title'>
-          <Link to={`/note/${id}`}>
+          <Link to={`/note/${id}`} >
             {name}
           </Link>
         </h2>
@@ -75,6 +64,21 @@ export default class Note extends Component {
           {' '}
           remove
         </button>
+        <Link to={{
+          pathname:`edit-note`,
+          theNoteId: id
+        }}
+        >
+        <button
+          className='Note__edit'
+          type='button'
+          onClick={this.handleClickEdit}
+        >
+          <FontAwesomeIcon icon='edit' />
+          {' '}
+          edit
+        </button>
+        </Link>
         <div className='Note__dates'>
           <div className='Note__dates-modified'>
             Modified

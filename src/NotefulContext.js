@@ -8,6 +8,7 @@ const NotefulContext = React.createContext({
     deleteFolder: () => {},
     addFolder: () => {},
     addNote: () => {},
+    editNote: () => {},
     toggleErrors: () => {},
     throwError: () => {},
     backButton: () => {}

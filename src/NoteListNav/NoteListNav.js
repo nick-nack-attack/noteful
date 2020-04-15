@@ -4,11 +4,35 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import CircleButton from '../CircleButton/CircleButton'
 import NotefulContext from '../NotefulContext'
 import { countNotesForFolder } from '../notes-helpers'
+import config from '../config'
 import './NoteListNav.css'
 
 export default class NoteListNav extends Component {
 
+  static defaultProps = {
+    onDeleteFolder: () => {},
+  }
+
   static contextType = NotefulContext;
+
+  handleClickDeleteFolder = (folderId) => {
+    fetch( config.API_FOLDERS + '/' + folderId, {
+      method: 'DELETE',
+      headers: {
+        'content-type': 'application/json'
+      },
+    })
+    .then(res => {
+      if (!res.ok) {
+        return res.json().then(e=>Promise.reject(e))
+      }
+    })
+    .then(() => {
+      this.context.deleteFolder(folderId)
+      this.context.onDeleteFolder(folderId)
+    })
+    .catch(err => console.log(err))
+  }
 
   render() {
 
@@ -20,6 +44,15 @@ export default class NoteListNav extends Component {
       <ul className='NoteListNav__list'>
         {folders.map(folder =>
           <li key={folder.id}>
+            <div className='folder__delete__div'>
+              <button
+                className='folder__delete'
+                type='button'
+                onClick={() => this.handleClickDeleteFolder(folder.id)}
+              >
+                <FontAwesomeIcon icon='trash-alt' />
+              </button>
+              </div>
             <NavLink
               className='NoteListNav__folder-link'
               to={`/folder/${folder.id}`}

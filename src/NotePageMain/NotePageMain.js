@@ -9,7 +9,7 @@ export default class NotePageMain extends Component {
 
   state = {
     forErrors: this.props.match,
-    toggle: true
+    toggle: true,
   }
 
   static defaultProps = {
@@ -20,7 +20,7 @@ export default class NotePageMain extends Component {
 
   static contextType = NotefulContext;
 
-  handleDeleteNote = noteId => {
+  handleDeleteNote = note_id => {
     this.props.history.push('/')
   }
 
@@ -28,6 +28,11 @@ export default class NotePageMain extends Component {
     const { notes=[] } = this.context
     const { noteId } = this.state.forErrors.params
     const note = findNote(notes, noteId) || { content: ''}
+    
+    console.log('this is passed in NOTE_ID', noteId);
+    console.log('these are notes', notes);
+    console.log('this is note', note);
+
       if(this.state.toggle === false) {
         this.setState({
           forErrors: 'err'
