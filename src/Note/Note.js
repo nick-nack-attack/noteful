@@ -24,7 +24,7 @@ export default class Note extends Component {
 
   // Now handle the click delete. It has one argument, event.
   handleClickDelete = () => {
-    const noteId = this.props.id    
+    const noteId = this.props.note.id    
     fetch( config.API_NOTES + '/' + noteId , {
       method: 'DELETE',
       headers: {
@@ -65,7 +65,7 @@ export default class Note extends Component {
           remove
         </button>
         <Link to={{
-          pathname:`edit-note`,
+          pathname:`edit-note/${id}`, 
           theNoteId: id
         }}
         >

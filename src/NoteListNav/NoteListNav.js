@@ -9,8 +9,6 @@ import './NoteListNav.css'
 
 export default class NoteListNav extends Component {
 
-
-
   static contextType = NotefulContext;
 
   handleClickDeleteFolder = (folderId) => {

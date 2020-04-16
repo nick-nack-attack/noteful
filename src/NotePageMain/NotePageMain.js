@@ -46,9 +46,7 @@ export default class NotePageMain extends Component {
 
     <section className='NotePageMain'>
       <Note
-        id={note.id}
-        name={note.note_name}
-        modified={note.modified}
+        note={note}
         onDeleteNote={this.handleDeleteNote}
       />
       <div className='NotePageMain__content'>

@@ -85,7 +85,8 @@ class App extends Component {
 
     handleDeleteFolder = folderId => {
         this.setState({
-            folders: this.state.folders.filter(folder => folder.id !== folderId)
+            folders: this.state.folders.filter(folder => folder.id !== folderId),
+            notes: this.state.notes.filter(note => note.folderid !== folderId)
         });
     };
 
@@ -111,7 +112,14 @@ class App extends Component {
                 </ErrorBoundary>
                     <Route path="/add-folder" component={AddFolder} />
                     <Route path="/add-note" component={AddNote} />
-                    <Route path="/edit-note" component={EditNote} />
+                    <Route path="/edit-note/:noteId" 
+                        render = {(routeProps) => {
+                            let matchNote = routeProps.match.params.noteId
+                            let note = this.state.notes.find(note => note.id == parseInt(matchNote))
+                           return <EditNote note={note}/>
+                        }}
+                    />
+                    
             </>
         );
     }

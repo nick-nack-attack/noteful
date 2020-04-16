@@ -24,36 +24,6 @@ export default class EditNote extends Component {
 
     static contextType = NotefulContext;
 
-    componentDidMount() {
-        
-        const noteLocation = config.API_NOTES + '/' + this.props.location.theNoteId;
-        console.log('fetch for edit: ' + noteLocation)
-
-        fetch(noteLocation, {
-            method: 'GET',
-        })
-        .then(res => {
-            if(!res.ok) {
-                return res.json()
-                    .then(error => Promise.reject(error))
-            }
-            return res.json()
-        })
-        .then(responseData => {
-            this.setState({
-                id: responseData.id,
-                note_name: responseData.note_name,
-                modified: responseData.modified,
-                folderid: responseData.folderid,
-                content: responseData.content
-            })
-        })
-        .catch(error => {
-            console.log(error)
-            this.setState({ error })
-        })
-    }
-
     goBack = () => {
         this.props.history.goBack();
     }
@@ -61,15 +31,18 @@ export default class EditNote extends Component {
     updateFormEntry(event) {
         const name = event.target.name;
         const value = event.target.value;
+
         if(event.target.selectedOptions) {
             this.id = event.target.selectedOptions[0].id;
             this.setState({
                 'folderid': this.id
             })
         }
+
         this.setState({
             [event.target.name]: event.target.value,
         }, () => {this.validateEntry(name,value)});
+
     }
 
     validateEntry(name, value) {
@@ -158,8 +131,7 @@ export default class EditNote extends Component {
     render() {
 
         const { note_name, modified, folderid, content } = this.state
-        const noteToEdit = { note_name, modified, folderid, content }
-        console.log('folder name is:' + this.folder_name)
+        // const noteToEdit = { note_name, modified, folderid, content }
         const folders = this.context.folders;
         const folderOptions = folders.map( folder => {
             return (
@@ -170,6 +142,8 @@ export default class EditNote extends Component {
                 </option>
                 )
         })
+
+        console.log('This is the note params: ', this.props.params.noteId)
 
         return (
 
@@ -188,7 +162,7 @@ export default class EditNote extends Component {
                             aria-label='Title'
                             aria-required='true'
                             placeholder="ex. New Note"
-                            value={note_name}
+                            //defaultValue={this.props.note.note_name ? this.props.note.note_name : ''}
                             onChange={e => this.updateFormEntry(e)}/>
                     </div>
                     <ErrMsg msg={''} />
