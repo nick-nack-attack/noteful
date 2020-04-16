@@ -9,9 +9,7 @@ import './NoteListNav.css'
 
 export default class NoteListNav extends Component {
 
-  static defaultProps = {
-    onDeleteFolder: () => {},
-  }
+
 
   static contextType = NotefulContext;
 
@@ -29,7 +27,6 @@ export default class NoteListNav extends Component {
     })
     .then(() => {
       this.context.deleteFolder(folderId)
-      this.context.onDeleteFolder(folderId)
     })
     .catch(err => console.log(err))
   }
