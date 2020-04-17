@@ -97,6 +97,7 @@ class App extends Component {
                     <Route exact key={path} path={path} component={NoteListNav} /> ))}
                     <Route path="/note/:noteId" component={NotePageNav} />     
                     <Route path="/add-folder" component={NotePageNav} />
+                    
             </> 
         );
     }
@@ -116,7 +117,7 @@ class App extends Component {
                         render = {(routeProps) => {
                             let matchNote = routeProps.match.params.noteId
                             let note = this.state.notes.find(note => note.id == parseInt(matchNote))
-                           return <EditNote note={note}/>
+                           return <EditNote noteId={matchNote}/>
                         }}
                     />
                     

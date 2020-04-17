@@ -7,186 +7,212 @@ import './editNote.css'
 
 export default class EditNote extends Component {
 
-    constructor(props) {
-        super(props);
-        this.state = {
-            note_name: null,
-            modified: null,
-            folderid: null,
-            content: null,
-            formValid: false,
-            titleValid: false,
-            contentValid: false,
-            folderSelectValid: false,
-            errMsg: ''
+    static contextType = NotefulContext;
+
+    state = {
+        id: {
+            value: null
+        },
+        note_name: {
+            value: '',
+            touched: false
+        },
+        content: {
+            value: '',
+            touched: false
+        },
+        folder: {
+            folderSelected: '',
+            folderid: '',
+            touched: false
+        },
+        modified: {
+            value: ''
+        },
+    };
+
+    updateName = (note_name) => {
+        this.setState({
+            note_name: {
+                value: note_name,
+                touched: true
+            }
+        })
+    };
+
+    updateContent = (content) => {
+        this.setState({
+            name: {
+                value: content,
+                touched: true
+            }
+        })
+    };
+
+    updateFolder = (folder_name, folder_id) => {
+        this.setState({
+            folder: {
+                folderSelected: folder_name,
+                folderid: folder_id,
+                touched: true
+            }
+        })
+    };
+
+    validateEntry(key, value) {
+
+        if (value !== '') {
+            value = value.trim();
         }
+
+        if ((key === 'note_name') || (key === 'content')) {
+            if (value.length < 1) {
+                return 'Note name and content are required'
+            }
+        } else if ( (key === 'folderSelect') && (value === 'Select') ) {
+            return 'Folder must be selected'
+        }
+
     }
 
-    static contextType = NotefulContext;
+    componentDidMount() {
+
+        console.log("THIS IS PASSED IN: " + this.props.noteId)
+        console.log("also this!!! " + this.props.value.location.theNoteId)
+
+        const passedInNoteId = this.props.noteId
+
+        console.log(parseInt(passedInNoteId))
+
+        const noteLocation = config.API_NOTES + '/' + passedInNoteId
+
+        console.log("Note Location: " + noteLocation)
+
+        fetch(noteLocation, {method: 'GET'})
+            .then(res => {
+                if (!res.ok) {
+                    return res.json().then(error => Promise.reject(error))
+                }
+                return res.json()
+                })
+            .then(resData => {
+                this.setState({
+                    id: { value: resData.id},
+                    note_name: { value: resData.note_name },
+                    modified: { value: resData.modified },
+                    folder: { folderid: resData.folderid },
+                    content: { value: resData.content },
+                })
+            })
+
+    }
 
     goBack = () => {
         this.props.history.goBack();
     }
 
-    updateFormEntry(event) {
-        const name = event.target.name;
-        const value = event.target.value;
-
-        if(event.target.selectedOptions) {
-            this.id = event.target.selectedOptions[0].id;
-            this.setState({
-                'folderid': this.id
-            })
-        }
-
-        this.setState({
-            [event.target.name]: event.target.value,
-        }, () => {this.validateEntry(name,value)});
-
-    }
-
-    validateEntry(name, value) {
-        let hasErrors = false;
-
-        value= value.trim();
-
-        if ((name === 'title') || (name === 'content')) {
-            if (value.length < 1) {
-                hasErrors = true
-            }
-            else {
-                hasErrors = false
-            }
-        }
-
-        else if ( (name === 'folderSelect') && (value === 'Select') ) {
-            hasErrors = true
-        }
-
-        else {
-            hasErrors = false
-        }
-
-        this.setState({
-            [`${name}Valid`] : !hasErrors 
-            }, this.formValid
-            );
-    }
-
-    formValid() {
-        const { titleValid, contentValid, folderSelectValid } = this.state;
-        if (titleValid && contentValid && folderSelectValid === true) {
-            this.setState({
-                    formValid: true,
-                    validationMessage: null
-            });
-        }
-        else {this.setState({
-            formValid: !this.formValid,
-            validationMessage: 'All fields are required!'
-        })}
-    }
-
-    handleSubmit = (editedNote, callback) => {
+    handleSubmit = e => {
         
-        // event.preventDefault();
+        e.preventDefault();
 
-        this.setState({ error: null })
-
-        const { note_name, folderid, content } = this.state;
-
-        const note = {
-            note_name: note_name,
-            modified: new Date().toISOString(),
-            folderid: folderid,
-            content: content
+        const updatedNote = {
+            id: this.state.id.value,
+            note_name: this.state.note_name.value,
+            content: this.state.content.value,
+            folderid: this.state.folder.folderid
         }
 
-        fetch(config.API_NOTES, {
+        console.log(updatedNote)
+
+        fetch((config.API_NOTES + '/' + this.state.id.value), {
             method: 'PATCH',
-            body: JSON.stringify(editedNote),
-            headers: {
-                'content-type': 'application/json'
-            }
+            body: JSON.stringify(updatedNote),
+            headers: { 'content-type': 'application/json' }
         })
         .then(res => {
             if (!res.ok) {
-                return res
-                    .json()
-                    .then(error =>
-                        Promise.reject(error))
-                }
-            })
-            .then(() => {
-                callback(callback)
-                this.context.updateNote(note)
-                this.props.history.push('/')
-            })
-            .catch(error => {
-                console.log(error)
-                this.setState({ error })
-            })
+                return res.json().then(error => Promise.reject(error))}
+        })
+        .then((note) => {
+            console.log(note)
+            this.context.editNote(note);
+            // this.props.history.push('/')
+            window.location.href = '/'
+        })
+        .catch(error => {
+            console.log(error)
+            this.setState({ error })
+        })
     }
 
     render() {
 
-        const { note_name, modified, folderid, content } = this.state
         // const noteToEdit = { note_name, modified, folderid, content }
         const folders = this.context.folders;
-        const folderOptions = folders.map( folder => {
-            return (
-                <option
-                    key={folder.id}
-                    id={folder.id}>
-                    {folder.folder_name}
-                </option>
-                )
-        })
+        const folderOptions = []
+        folderOptions.push(folders.find(folder => folder.id == this.state.id.value))
+        const newFolders = folders.filter( folder => folder.id !== this.state.id.value) 
+            newFolders.forEach(folder => {
+                folderOptions.push(
 
-        console.log('This is the note params: ', this.props.params.noteId)
+                    <option
+                        key={folder.id}
+                        id={folder.id}>
+                        {folder.folder_name}
+                    </option>
+    
+                    )
+            })
+            // Find the right folder and then return it as the first option
+
+
+        console.log("Here is the state name: " + this.state.note_name.value)
 
         return (
 
             <div className='addNote__div'>
                 <h2>Edit Note</h2>
                 <NotefulForm
-                onSubmit={ () => this.handleSubmit }
+                onSubmit={ this.handleSubmit }
                 >
                     <div className='addNote__field'>
-                        <label htmlFor='note-name-input'>Title</label>
+                        <label htmlFor='note-name-input'>Name</label>
+                            
                         <input
+                            id='note-name-input'
+                            name='note-name'
                             type='text'
                             className='field'
-                            name='title'
-                            id='title'
-                            aria-label='Title'
+                            aria-label='Name'
                             aria-required='true'
-                            placeholder="ex. New Note"
-                            //defaultValue={this.props.note.note_name ? this.props.note.note_name : ''}
-                            onChange={e => this.updateFormEntry(e)}/>
+                            defaultValue={this.state.note_name.value}
+                            onChange={e => this.updateName(e.target.value)}/>
                     </div>
-                    <ErrMsg msg={''} />
                     <div className='addNote__field'>
-                        <label htmlFor='content'>Content</label>
+                        <label htmlFor='note-content-input'>Content</label>
+                            {this.state.content.touched && ( <ErrMsg msg={this.validateEntry()} /> )}
                         <textarea
+                            id='note-content-input'
+                            name='note-content'
                             className='field'
-                            name='content'
-                            id='content'
-                            value={content}
-                            onChange={e => this.updateFormEntry(e)}/>
+                            defaultValue={this.state.content.value}
+                            rows={4}
+                            onChange={e => this.updateContent(e.target.value)}/>
                     </div>
                     <div className='addNote__field'>
-                        <label htmlFor='folder-select'>Folder</label>
+                        <label htmlFor='note-folder-select'>Folder</label>
+                            
                         <select 
+                            id="note-folder-select"
+                            name="note-folder-id"
+                            ref={this.state.folder.folderSelected}
                             type="text"
                             className="field"
-                            name="folderSelect"
-                            id="folder-select"
-                            ref={this.folderSelect}
-                            value={this.folder_name}
-                            onChange={event => this.updateFormEntry(event, this.folder_name)}>
-                                <option>Select</option>
-                            { folderOptions }
+                            defaultValue={this.state.folder.folderSelected}
+                            onChange={e => this.updateFolder(e.target.value, e.target.ref)}>
+                                
+                                { folderOptions }
+
                         </select>
                     </div>
                     <div
@@ -201,12 +227,18 @@ export default class EditNote extends Component {
                         <button
                             type='submit'
                             className='addNote__button'    
-                            disabled={ !this.state.formValid } >   
-                                Edit
+                        >   
+                                Save changes
                         </button>
                     </div>
                 </NotefulForm>
             </div>
         )
+    }
+}
+
+EditNote.defaultProps = {
+    history: {
+        goBack: () => {}
     }
 }
