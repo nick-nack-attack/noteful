@@ -10,54 +10,27 @@ export default class EditNote extends Component {
     static contextType = NotefulContext;
 
     state = {
-        id: {
-            value: null
-        },
-        note_name: {
-            value: '',
-            touched: false
-        },
-        content: {
-            value: '',
-            touched: false
-        },
-        folder: {
-            folderSelected: '',
-            folderid: '',
-            touched: false
-        },
-        modified: {
-            value: ''
-        },
+        id: null,
+        title: '',
+        titleTouched: false,
+        content: '',
+        contentTouched: false,
+        folderSelected: '',
+        selectedFolderId: null,
+        folderId: null,
+        folderSelectedTouched: false,
+        error: null
     };
 
-    updateName = (note_name) => {
+    updateForm(event) {
+        
+        const name = event.target.name;
+        const value = event.target.value;
         this.setState({
-            note_name: {
-                value: note_name,
-                touched: true
-            }
+            [name]: value,
+            [`${name}Touched`]: true
         })
-    };
-
-    updateContent = (content) => {
-        this.setState({
-            name: {
-                value: content,
-                touched: true
-            }
-        })
-    };
-
-    updateFolder = (folder_name, folder_id) => {
-        this.setState({
-            folder: {
-                folderSelected: folder_name,
-                folderid: folder_id,
-                touched: true
-            }
-        })
-    };
+    }
 
     validateEntry(key, value) {
 
@@ -72,58 +45,97 @@ export default class EditNote extends Component {
         } else if ( (key === 'folderSelect') && (value === 'Select') ) {
             return 'Folder must be selected'
         }
-
     }
 
     componentDidMount() {
-
-        console.log("THIS IS PASSED IN: " + this.props.noteId)
-        console.log("also this!!! " + this.props.value.location.theNoteId)
-
         const passedInNoteId = this.props.noteId
-
-        console.log(parseInt(passedInNoteId))
-
         const noteLocation = config.API_NOTES + '/' + passedInNoteId
-
-        console.log("Note Location: " + noteLocation)
-
         fetch(noteLocation, {method: 'GET'})
             .then(res => {
-                if (!res.ok) {
-                    return res.json().then(error => Promise.reject(error))
-                }
-                return res.json()
-                })
+                if (!res.ok) { 
+                    return res.json().then(error => Promise.reject(error)) 
+                } 
+                return res.json() 
+            })
             .then(resData => {
                 this.setState({
-                    id: { value: resData.id},
-                    note_name: { value: resData.note_name },
-                    modified: { value: resData.modified },
-                    folder: { folderid: resData.folderid },
-                    content: { value: resData.content },
+                    id: resData.id,
+                    title: resData.note_name,
+                    folderId: resData.folderid,
+                    content: resData.content
                 })
+                
             })
-
+            .then(res => {
+                const folder_id = this.state.folderId
+                fetch((config.API_FOLDERS + '/' + folder_id), {method: 'GET'})
+                .then(res => {
+                    if (!res.ok) { return res.json().then(error => Promise.reject(error)) } return res.json() })
+                    .then(res => {
+                        this.setState({
+                            folderSelected: res
+                        })
+                    })
+            })
     }
 
     goBack = () => {
-        this.props.history.goBack();
+        window.location.href = '/'
+    };
+
+    reducefields = (array) => {
+        return array.reduce((result, item) => {
+            let key = Object.keys(item)[0];
+            result[key] = item[key];
+            return result;
+        })
     }
 
-    handleSubmit = e => {
+    sendChangedFields = (object) => {
+        const noteUrl = config.API_NOTES + '/' + this.state.id;
+        fetch(noteUrl, {
+            method: 'PATCH',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify(object),
+        })
+        .then(res => {
+            if (!res.ok) {
+                return res.json().then(error => Promise.reject(error))}
+        })
+        .then((note) => {
+            this.context.editNote(note);
+            window.location.href = '/'
+        })
+        .catch(error => {
+            this.setState({ error })
+        })
         
-        e.preventDefault();
+    };
 
+    handleSubmit = e => {
+        e.preventDefault();
+        const { titleTouched, contentTouched, selectedFolderIdTouched } = this.state
+        const updatedFields = [];
+        const updatedNote = {
+        }
+        if (titleTouched) { updatedFields.push({note_name: this.state.title}) }
+        else if (contentTouched) { updatedFields.push({content: this.state.content}) }
+        else if (selectedFolderIdTouched) { updatedFields.push({ folderid: this.state.selectedFolderIdTouched }) }
+
+        if ( updatedFields.length === 0 ) {
+            this.goBack()
+        } else (
+            this.sendChangedFields(this.reducefields(updatedFields)) 
+        )
+
+        /*
         const updatedNote = {
             id: this.state.id.value,
             note_name: this.state.note_name.value,
             content: this.state.content.value,
             folderid: this.state.folder.folderid
         }
-
-        console.log(updatedNote)
-
+        
         fetch((config.API_NOTES + '/' + this.state.id.value), {
             method: 'PATCH',
             body: JSON.stringify(updatedNote),
@@ -134,83 +146,75 @@ export default class EditNote extends Component {
                 return res.json().then(error => Promise.reject(error))}
         })
         .then((note) => {
-            console.log(note)
             this.context.editNote(note);
-            // this.props.history.push('/')
             window.location.href = '/'
         })
         .catch(error => {
-            console.log(error)
             this.setState({ error })
         })
-    }
+        */
+    };
 
     render() {
-
-        // const noteToEdit = { note_name, modified, folderid, content }
-        const folders = this.context.folders;
-        const folderOptions = []
-        folderOptions.push(folders.find(folder => folder.id == this.state.id.value))
-        const newFolders = folders.filter( folder => folder.id !== this.state.id.value) 
-            newFolders.forEach(folder => {
-                folderOptions.push(
-
-                    <option
-                        key={folder.id}
-                        id={folder.id}>
-                        {folder.folder_name}
-                    </option>
-    
-                    )
+        const folders = this.context.folders || [];
+        const folderOptions = folders.length === 0 
+            ? <option>Select ...</option>
+            : folders.map(folder => {
+             return (
+                <option 
+                    id={folder.id} 
+                    value={folder.id}
+                    selected={this.state.folderSelected.id === folder.id}
+                >
+                    { folder.folder_name }
+                </option>)
             })
-            // Find the right folder and then return it as the first option
-
-
-        console.log("Here is the state name: " + this.state.note_name.value)
 
         return (
 
             <div className='addNote__div'>
                 <h2>Edit Note</h2>
                 <NotefulForm
-                onSubmit={ this.handleSubmit }
+                onSubmit={e => this.handleSubmit(e)}
                 >
                     <div className='addNote__field'>
                         <label htmlFor='note-name-input'>Name</label>
                             
                         <input
                             id='note-name-input'
-                            name='note-name'
+                            name='title'
                             type='text'
                             className='field'
                             aria-label='Name'
                             aria-required='true'
-                            defaultValue={this.state.note_name.value}
-                            onChange={e => this.updateName(e.target.value)}/>
+                            value={this.state.title}
+                            onChange={e => this.updateForm(e)}
+                        />
                     </div>
                     <div className='addNote__field'>
                         <label htmlFor='note-content-input'>Content</label>
-                            {this.state.content.touched && ( <ErrMsg msg={this.validateEntry()} /> )}
+                            {/* {this.state.content.touched && ( <ErrMsg msg={this.validateEntry()} /> )} */}
                         <textarea
                             id='note-content-input'
-                            name='note-content'
+                            name='content'
                             className='field'
-                            defaultValue={this.state.content.value}
+                            defaultValue={this.state.content}
                             rows={4}
-                            onChange={e => this.updateContent(e.target.value)}/>
+                            onChange={e => this.updateForm(e)}
+                        />
                     </div>
                     <div className='addNote__field'>
                         <label htmlFor='note-folder-select'>Folder</label>
                             
                         <select 
                             id="note-folder-select"
-                            name="note-folder-id"
-                            ref={this.state.folder.folderSelected}
+                            name="selectedFolderId"
+                            // ref={this.state.folder.folderSelected}
                             type="text"
                             className="field"
-                            defaultValue={this.state.folder.folderSelected}
-                            onChange={e => this.updateFolder(e.target.value, e.target.ref)}>
-                                
+                            defaultValue={this.state.folderSelected}
+                            onChange={e => this.updateForm(e)}
+                        >
                                 { folderOptions }
 
                         </select>
@@ -226,9 +230,9 @@ export default class EditNote extends Component {
                         </button>
                         <button
                             type='submit'
-                            className='addNote__button'    
+                            className='addNote__button'   
                         >   
-                                Save changes
+                                Save
                         </button>
                     </div>
                 </NotefulForm>

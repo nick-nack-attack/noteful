@@ -1,31 +1,27 @@
-import React, { Component } from 'react'
+import React from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faChevronLeft } from '@fortawesome/free-solid-svg-icons'
 import CircleButton from '../CircleButton/CircleButton'
-import PropTypes from 'prop-types';
+import NotefulContext from '../NotefulContext'
+import { findNote, findFolder } from '../notes-helpers'
 import './NotePageNav.css'
-import { findNote, findFolder } from '../notes-helpers';
-import NotefulContext from '../NotefulContext';
 
-export default class NotePageNav extends Component {
-
+export default class NotePageNav extends React.Component {
   static defaultProps = {
     history: {
-      goBack: () => {}
+      goBack: () => { }
     },
     match: {
       params: {}
     }
   }
-  
   static contextType = NotefulContext;
 
   render() {
-
-    const { notes, folders } = this.context
+    const { notes, folders, } = this.context
     const { noteId } = this.props.match.params
-    const note = findNote( notes, noteId ) || {}
-    const folder = findFolder( folders, note.folderid )
-
+    const note = findNote(notes, noteId) || {}
+    const folder = findFolder(folders, note.folderid)
     return (
       <div className='NotePageNav'>
         <CircleButton
@@ -34,7 +30,8 @@ export default class NotePageNav extends Component {
           onClick={() => this.props.history.goBack()}
           className='NotePageNav__back-button'
         >
-          <FontAwesomeIcon icon='chevron-left' />
+          <FontAwesomeIcon icon={faChevronLeft}/>
+
           <br />
           Back
         </CircleButton>
@@ -46,9 +43,4 @@ export default class NotePageNav extends Component {
       </div>
     )
   }
-
 }
-
-NotePageNav.propType = {
-  push: PropTypes.func.isRequired
-};

@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import { NavLink, Link } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faPlus, faTrashAlt } from '@fortawesome/free-solid-svg-icons'
 import CircleButton from '../CircleButton/CircleButton'
 import NotefulContext from '../NotefulContext'
 import { countNotesForFolder } from '../notes-helpers'
@@ -45,7 +46,7 @@ export default class NoteListNav extends Component {
                 type='button'
                 onClick={() => this.handleClickDeleteFolder(folder.id)}
               >
-                <FontAwesomeIcon icon='trash-alt' />
+                <FontAwesomeIcon icon={faTrashAlt}/>
               </button>
               </div>
             <NavLink
@@ -67,7 +68,7 @@ export default class NoteListNav extends Component {
           type='button'
           className='NoteListNav__add-folder-button'
         >
-          <FontAwesomeIcon icon='plus' />
+          <FontAwesomeIcon icon={faPlus} />
           <br />
           Folder
         </CircleButton>

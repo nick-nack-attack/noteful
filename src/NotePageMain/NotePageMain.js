@@ -1,15 +1,20 @@
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import React from 'react'
+import { Link } from 'react-router-dom'
+import { format } from 'date-fns'
+import NotefulContext from '../NotefulContext'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faTrashAlt, faEdit } from '@fortawesome/free-solid-svg-icons'
+import { findNote } from '../notes-helpers'
+import config from '../config'
 import './NotePageMain.css'
-import NotefulContext from '../NotefulContext';
-import Note from '../Note/Note';
-import { findNote } from '../notes-helpers';
 
-export default class NotePageMain extends Component {
+export default class NotePageMain extends React.Component {
 
-  state = {
-    forErrors: this.props.match,
-    toggle: true,
+  constructor(props){
+    super(props);
+    this.state = {
+      id: this.props.match.params.noteId
+    }
   }
 
   static defaultProps = {
@@ -17,50 +22,56 @@ export default class NotePageMain extends Component {
       params: {}
     }
   }
+  static contextType = NotefulContext
 
-  static contextType = NotefulContext;
-
-  handleDeleteNote = note_id => {
-    this.props.history.push('/')
+  handleDeleteNote = noteId => {
+    this.props.history.push(`/`)
   }
 
-  render () {
-    const { notes=[] } = this.context
-    const { noteId } = this.state.forErrors.params
-    const note = findNote(notes, noteId) || { content: ''}
-    
-    console.log('this is passed in NOTE_ID', noteId);
-    console.log('these are notes', notes);
-    console.log('this is note', note);
-
-      if(this.state.toggle === false) {
-        this.setState({
-          forErrors: 'err'
-        })
-        this.setState({
-          forErrors: this.props.match
-        })
+  handleClickDelete = (noteId) => {
+    fetch( config.API_NOTES + '/' + noteId , {
+      method: 'DELETE',
+      headers: {
+        'content-type': 'application/json'
+      },
+    })
+    .then( res => {
+      if (!res.ok) {
+        return res.json().then(e=>Promise.reject(e))
       }
-
-  return (
-
-    <section className='NotePageMain'>
-      <Note
-        note={note}
-        onDeleteNote={this.handleDeleteNote}
-      />
-      <div className='NotePageMain__content'>
-        {note.content.split(/\n \r|\n/).map((para, i) =>
-          <p key={i}>{para}</p>
-        )}
-      </div>
-    </section>
-  )
+    })
+    .then( () => {
+      this.context.deleteNote(noteId)
+      this.handleDeleteNote()
+    })
+    .catch(err => console.log(err))
   }
-}
 
-NotePageMain.defaultProps = {
-  note: {
-    content: '',
+  render() {
+    const { notes=[] } = this.context
+    const { noteId } = this.props.match.params
+    console.log(notes, noteId)
+    const note = findNote(notes, parseInt(noteId)) || { content: '' }
+
+    return (
+      <section className='NotePageMain'>
+        <h1>{note.note_name}</h1>
+        <h2>Modified { note.modified && format(new Date(note.modified), 'MMM dd, yyyy') }</h2>
+        <div className='NotePageMain__content'>
+          {note.content.split(/\n \r|\n/).map((para, i) =>
+            <p key={i}>{para}</p>
+          )}
+        </div>
+        <button 
+          
+          type='button'
+          onClick={() => this.handleClickDelete(note.id)}
+        >
+          <FontAwesomeIcon icon={faTrashAlt}/>
+          {' '}
+          remove
+        </button>
+      </section>
+    )
   }
 }

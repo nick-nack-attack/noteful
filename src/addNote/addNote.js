@@ -11,11 +11,12 @@ export default class AddNote extends Component {
         title: "",
         content: "",
         folderSelect: "",
-        folderid: "",
+        folderid: null,
         formValid: false,
         titleValid: false,
         contentValid: false,
         folderSelectValid: false,
+        validationMessage: '',
         errMsg: ''
         }
 
@@ -23,13 +24,6 @@ export default class AddNote extends Component {
 
     goBack = () => {
         this.props.history.goBack();
-    }
-
-    generateNewNoteId = () => {
-        // d26e01a6-ffaf-11e8-8eb2-f2801f1b9fd1
-        const idFront = Math.random().toString(36).substr(2, 8);
-        const idTotal = idFront + '-ffaf-11e8-8eb2-f2801f1b9fd1'
-        return idTotal
     }
 
     updateFormEntry(event) {
@@ -49,10 +43,8 @@ export default class AddNote extends Component {
 
     validateEntry(name, value) {
         let hasErrors = false;
-
         value= value.trim();
-
-        if ((name === 'title') || (name === 'content')) {
+        if ((name === 'note_name') || (name === 'content')) {
             if (value.length < 1) {
                 hasErrors = true
             }
@@ -60,15 +52,12 @@ export default class AddNote extends Component {
                 hasErrors = false
             }
         }
-
         else if ( (name === 'folderSelect') && (value === 'Select') ) {
             hasErrors = true
         }
-
         else {
             hasErrors = false
         }
-
         this.setState({
             [`${name}Valid`] : !hasErrors 
             }, this.formValid
@@ -76,17 +65,19 @@ export default class AddNote extends Component {
     }
 
     formValid() {
-        const { titleValid, contentValid, folderSelectValid } = this.state;
-        if (titleValid && contentValid && folderSelectValid === true) {
+        const { titleValid, contentValid, folderSelectValid } = this.state;        
+        if (titleValid && folderSelectValid === true) {
             this.setState({
                     formValid: true,
                     validationMessage: null
             });
+        } else if (!titleValid && !folderSelectValid) {
+            this.setState({ formValid: false, validationMessage: 'Title and Folder are required' })
+        } else if (!titleValid) {
+            this.setState({ formValid: false, validationMessage: 'Title is required' })
+        } else if (!folderSelectValid) {
+            this.setState({ formValid: false, validationMessage: 'Folder is required' })
         }
-        else {this.setState({
-            formValid: !this.formValid,
-            validationMessage: 'All fields are required!'
-        })}
     }
 
     handleSubmit(event) {
@@ -139,9 +130,8 @@ export default class AddNote extends Component {
                 </option>
                 )
         })
-
+        const validationMessage = this.state.validationMessage
         return (
-
             <div className='addNote__div'>
                 <h2>New Note</h2>
                 <NotefulForm
@@ -150,7 +140,7 @@ export default class AddNote extends Component {
                 }}
                 >
                     <div className='addNote__field'>
-                        <label htmlFor='note-name-input'>Title</label>
+                        <label htmlFor='note-name-input'>Name</label>
                         <input
                             type='text'
                             className='field'
@@ -161,13 +151,14 @@ export default class AddNote extends Component {
                             placeholder="ex. New Note"
                             onChange={e => this.updateFormEntry(e)}/>
                     </div>
-                    <ErrMsg msg={''} />
+                    { validationMessage ? <ErrMsg msg={validationMessage} /> : <div></div> }
                     <div className='addNote__field'>
                         <label htmlFor='content'>Content</label>
                         <textarea
                             className='field'
                             name='content'
                             id='content'
+                            placeholder='(Optional)'
                             onChange={e => this.updateFormEntry(e)}/>
                     </div>
                     <div className='addNote__field'>

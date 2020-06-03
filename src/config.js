@@ -1,5 +1,5 @@
 export default {
-    API_ENDPOINT: 'http://localhost:9090/api/',
-    API_FOLDERS: 'http://localhost:9090/api/folders',
-    API_NOTES: 'http://localhost:9090/api/notes',
+    API_ENDPOINT: 'https://immense-journey-72674.herokuapp.com/api',
+    API_FOLDERS: 'https://immense-journey-72674.herokuapp.com/api/folders',
+    API_NOTES: 'https://immense-journey-72674.herokuapp.com/api/notes'
   }

@@ -1,7 +1,7 @@
-import React, { Component } from 'react';
+import React, { Component } from '../../node_modules/react';
 import NotefulContext from '../NotefulContext'
 import config from '../config'
-import PropTypes from 'prop-types';
+import PropTypes from '../../node_modules/prop-types';
 import './addFolder.css'
 
 export default class AddFolder extends Component {
@@ -50,10 +50,9 @@ export default class AddFolder extends Component {
     handleSubmit(e) {
         e.preventDefault();
         this.validateEntry();
-        console.log('handleSubmit ran!')
         if ( this.state.title.length === 0) {
         this.setState({
-            error: 'Error! Name is required'
+            error: 'Name is required'
         })
         } else {
 
@@ -73,15 +72,12 @@ export default class AddFolder extends Component {
         .then(res => {
             if (!res.ok) {
                 return res.json().then(error => {
-                    console.log(`Error is: ${error}`)
                     throw error
                 })
             }
             return res.json()
         })
         .then(data => {
-            console.log(this.props)
-            console.log(this.context)
             this.context.addFolder(data)
             this.goBack()
         })

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { format } from 'date-fns'
 import PropTypes from 'prop-types'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faTrashAlt, faEdit } from '@fortawesome/free-solid-svg-icons'
 import NotefulContext from '../NotefulContext'
 import config from '../config'
 import './Note.css'
@@ -19,7 +20,6 @@ export default class Note extends Component {
   static contextType = NotefulContext;
 
   handleClickEdit = () => {
-
   }
 
   // Now handle the click delete. It has one argument, event.
@@ -40,27 +40,33 @@ export default class Note extends Component {
       this.context.deleteNote(noteId)
       this.props.onDeleteNote(noteId)
     })
-    .catch(error=>console.log(error))
+    .catch(err => console.log(err))
   }
 
   render() {
 
-    const { id, name, modified } = this.props
+    const { id, note_name, modified, content } = this.props.note
+    const { note } = { id, note_name, modified, content }
 
     return (
 
       <div className='Note'>
+        <Link to={{
+          pathname:`/note/${this.props.note.id}`,
+          note: note
+        }}
+        
+        >
         <h2 className='Note__title'>
-          <Link to={`/note/${id}`} >
-            {name}
-          </Link>
+            { note_name }
         </h2>
+        </Link>
         <button 
           className='Note__delete' 
           type='button'
           onClick={this.handleClickDelete}
         >
-          <FontAwesomeIcon icon='trash-alt' />
+          <FontAwesomeIcon icon={faTrashAlt}/>
           {' '}
           remove
         </button>
@@ -74,7 +80,7 @@ export default class Note extends Component {
           type='button'
           onClick={this.handleClickEdit}
         >
-          <FontAwesomeIcon icon='edit' />
+          <FontAwesomeIcon icon={faEdit}/>
           {' '}
           edit
         </button>
@@ -84,7 +90,7 @@ export default class Note extends Component {
             Modified
             {' '}
             <span className='Date'>
-            { (this.props.modified) && format(new Date(this.props.modified), 'MMM dd, yyyy') }
+            { modified && format(new Date(modified), 'MMM dd, yyyy') }
             </span>
           </div>
         </div>

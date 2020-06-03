@@ -1,0 +1,104 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`AddNote component renders the complete form 1`] = `
+<div
+  className="addNote__div"
+>
+  <h2>
+    Edit Note
+  </h2>
+  <NotefulForm
+    onSubmit={[Function]}
+  >
+    <div
+      className="addNote__field"
+    >
+      <label
+        htmlFor="note-name-input"
+      >
+        Name
+      </label>
+      <input
+        aria-label="Name"
+        aria-required="true"
+        className="field"
+        id="note-name-input"
+        name="title"
+        onChange={[Function]}
+        type="text"
+        value=""
+      />
+    </div>
+    <div
+      className="addNote__field"
+    >
+      <label
+        htmlFor="note-content-input"
+      >
+        Content
+      </label>
+      <textarea
+        className="field"
+        defaultValue=""
+        id="note-content-input"
+        name="content"
+        onChange={[Function]}
+        rows={4}
+      />
+    </div>
+    <div
+      className="addNote__field"
+    >
+      <label
+        htmlFor="note-folder-select"
+      >
+        Folder
+      </label>
+      <select
+        className="field"
+        defaultValue=""
+        id="note-folder-select"
+        name="selectedFolderId"
+        onChange={[Function]}
+        type="text"
+      >
+        <option>
+          Select ...
+        </option>
+      </select>
+    </div>
+    <div
+      className="AddNote__buttons"
+    >
+      <button
+        className="addNote__button"
+        onClick={[Function]}
+        type="button"
+      >
+        Cancel
+      </button>
+      <button
+        className="addNote__button"
+        type="submit"
+      >
+        Save
+      </button>
+    </div>
+  </NotefulForm>
+</div>
+`;
+
+exports[`AddNote component renders the select options from folders 1`] = `
+<select
+  className="field"
+  defaultValue=""
+  id="note-folder-select"
+  name="selectedFolderId"
+  onChange={[Function]}
+  type="text"
+>
+  <option>
+    Select ...
+  </option>
+</select>
+`;

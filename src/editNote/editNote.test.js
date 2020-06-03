@@ -1,7 +1,7 @@
 import React from 'react';
 import { shallow } from 'enzyme'
 import toJson from 'enzyme-to-json'
-import AddNote from './AddNote'
+import EditNote from './editNote'
 
 describe(`AddNote component`, () => {
   const stubFolders = [
@@ -20,12 +20,12 @@ describe(`AddNote component`, () => {
   ]
 
   it('renders the complete form', () => {
-    const wrapper = shallow(<AddNote />)
+    const wrapper = shallow(<EditNote />)
     expect(toJson(wrapper)).toMatchSnapshot()
   })
 
   it('renders the select options from folders', () => {
-    const select = shallow(<AddNote folders={stubFolders} />)
+    const select = shallow(<EditNote folders={stubFolders} />)
       .find('#note-folder-select')
     expect(toJson(select)).toMatchSnapshot()
   })

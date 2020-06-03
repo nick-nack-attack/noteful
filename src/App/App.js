@@ -1,7 +1,10 @@
 import React, {Component} from 'react';
 import {Route, Link} from 'react-router-dom';
 import NotefulContext from '../NotefulContext';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faCheckDouble } from '@fortawesome/free-solid-svg-icons'
+
 import NotePageMain from '../NotePageMain/NotePageMain';
 import NotePageNav from '../NotePageNav/NotePageNav';
 import AddFolder from '../addFolder/addFolder';
@@ -20,6 +23,7 @@ class App extends Component {
         this.state = {
             notes: [],
             folders: [],
+            error: null,
             errorBoundaryKey: 0
         };
     }
@@ -73,7 +77,7 @@ class App extends Component {
             });
         })
         .catch( error => {
-            console.log({error})
+            this.setState({error: `Couldn't get folders or notes`})
         });
     }
 
@@ -109,7 +113,7 @@ class App extends Component {
                     <Route exact key={path} path={path} component={NoteListMain} />
                 ))}
                 <ErrorBoundary key={this.state.errorBoundaryKey}>
-                    <Route path="/note/:noteId" component={NotePageMain}/>
+                    <Route path="/note/:noteId" render={(props) => <NotePageMain {...props} notes={this.state.notes} /> } />
                 </ErrorBoundary>
                     <Route path="/add-folder" component={AddFolder} />
                     <Route path="/add-note" component={AddNote} />
@@ -117,7 +121,7 @@ class App extends Component {
                         render = {(routeProps) => {
                             let matchNote = routeProps.match.params.noteId
                             let note = this.state.notes.find(note => note.id == parseInt(matchNote))
-                           return <EditNote noteId={matchNote}/>
+                           return <EditNote noteId={matchNote} note={note}/>
                         }}
                     />
                     
@@ -147,7 +151,7 @@ class App extends Component {
                 <header className="App__header">
                     <h1>
                         <Link to="/">Noteful</Link>
-                        <FontAwesomeIcon icon="check-double" />
+                        <FontAwesomeIcon icon={faCheckDouble} />
                     </h1>
                 </header>
                 <main className="App__main">{this.renderMainRoutes()}</main>
